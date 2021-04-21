@@ -17,6 +17,7 @@ class pymkup:
             self.file = file
             self.inpfn = os.path.dirname(os.path.realpath(__file__)) + self.file
             self.template_pdf = PdfReader(self.inpfn)
+
             # Checking if the PDF was authored by BB
             bb_check = "Bluebeam" in self.template_pdf.Info.Creator
             self.file_name = Path(self.inpfn).stem
@@ -64,25 +65,20 @@ class pymkup:
                 pass
         return(markups_index)
 
-    def markup_space(self, markup):
-        markup_spaces = {}
-        spaces_list = []
+    def markup_space(self, markup, spaces_list=[]):
         try:
-            if markup.P.BSISpaces:
-                #This is way too much. Can support spaces 6 deep...
-                spaces_list.append(markup.P.BSISpaces[0].Title[1:-1])
-                spaces_list.append(markup.P.BSISpaces[0].Kids[0].Title[1:-1])
-                spaces_list.append(markup.P.BSISpaces[0].Kids[0].Kids[0].Title[1:-1])
-                spaces_list.append(markup.P.BSISpaces[0].Kids[0].Kids[0].Kids[0].Title[1:-1])
-                spaces_list.append(markup.P.BSISpaces[0].Kids[0].Kids[0].Kids[0].Kids[0].Title[1:-1])
-                spaces_list.append(markup.P.BSISpaces[0].Kids[0].Kids[0].Kids[0].Kids[0].Kids[0].Title[1:-1])
+            if markup['/P']:
+                spaces_list = self.markup_space(markup.P.BSISpaces[0], spaces_list + [markup.P.BSISpaces[0].Title[1:-1]]);
+            else: spaces_list = self.markup_space(markup.Kids[0], spaces_list + [markup.Kids[0].Title[1:-1]]);
         except:
             pass
+        
         return(spaces_list)
 
     # Extracting the current document's column/property lists
     # I probably missed some various properties.
     def get_columns(self):
+
         columns_lookup = column_data        
 
         # Taking the current column list across pages in the file and putting it into in a dictionary
